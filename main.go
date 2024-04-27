@@ -1,9 +1,15 @@
 package main
 
-import "github.com/labstack/echo"
+import (
+	"net/http"
+
+	"github.com/labstack/echo"
+)
 
 func main() {
 	e := echo.New()
-	// e.POST("/tax/calculations", CalTaxWithTaxLev)
-	e.Logger.Fatal(e.Start(":8080"))
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
+	})
+	e.Logger.Fatal(e.Start(":1323"))
 }
