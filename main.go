@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	calTax.InitDB()
 	// start server
 	e := echo.New()
 
@@ -16,6 +17,16 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.POST("/tax/calculations", calTax.CalTaxWithTaxLev)
+
+	g := e.Group("/admin")
+	g.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		if username == "adminTax" || password == "admin!" {
+			return true, nil
+		}
+		return false, nil
+	}))
+
+	g.POST("/deductions/personal", calTax.SetPersonalDeduction)
 
 	log.Fatal(e.Start(":8080"))
 }
