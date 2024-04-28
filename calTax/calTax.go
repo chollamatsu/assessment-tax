@@ -12,7 +12,8 @@ type Err struct {
 }
 
 type TotalTax struct {
-	Tax float64 `json:"tax"`
+	Tax      float64     `json : 'tax`
+	TaxLevel []taxDetail `json: "taxLevel`
 }
 
 type Tax struct {
@@ -26,20 +27,59 @@ type Allowance []struct {
 	Amount        float64 `json:amount`
 }
 
+type taxDetail struct {
+	Level string  `json:"level"`
+	Tax   float64 `json:"tax"`
+}
+
 var personalDeduction = float64(6 * math.Pow10(4))
 var kReceipt = float64(5 * math.Pow10(4))
 
-func TaxLevel(income float64) float64 {
+var taxDetails = []taxDetail{
+	{
+		Level: "0-150,000",
+		Tax:   0.0,
+	},
+	{
+		Level: "150,001-500,000",
+		Tax:   0.0,
+	},
+	{
+		Level: "500,001-1,000,000",
+		Tax:   0.0,
+	},
+	{
+		Level: "1,000,001-2,000,000",
+		Tax:   0.0,
+	},
+	{
+		Level: "2,000,001 ขึ้นไป",
+		Tax:   0.0,
+	},
+}
+
+func setTaxLevel(idx int, TaxVal float64) {
+	taxDetails[idx].Tax = TaxVal
+}
+
+func getTaxLevel(TaxVal float64) TotalTax {
+	total := TotalTax{
+		Tax:      TaxVal,
+		TaxLevel: taxDetails,
+	}
+	return total
+}
+func TaxLevel(income float64) (int, float64) {
 	if income >= 0 && income < float64(15*math.Pow10(4)) {
-		return 0
+		return 0, 0
 	} else if income > float64(15*math.Pow10(4)) && income <= float64(5*math.Pow10(5)) {
-		return 0.1 * (income - float64(15*math.Pow10(4)))
+		return 1, 0.1 * (income - float64(15*math.Pow10(4)))
 	} else if income <= float64(5*math.Pow10(5)) && income <= float64(1*math.Pow10(6)) {
-		return 1.5 * (income - float64(5*math.Pow10(5)))
+		return 2, 1.5 * (income - float64(5*math.Pow10(5)))
 	} else if income <= float64(1*math.Pow10(6)) && income <= float64(2*math.Pow10(6)) {
-		return 2 * (income - float64(1*math.Pow10(6)))
+		return 3, 2 * (income - float64(1*math.Pow10(6)))
 	} else {
-		return 3.5 * (income - float64(2*math.Pow10(6)))
+		return 4, 3.5 * (income - float64(2*math.Pow10(6)))
 	}
 }
 
@@ -111,6 +151,8 @@ func CalTaxWithWht(tax float64, wht float64) float64 {
 func CalTaxWithTaxLev(c echo.Context) error {
 	newTax := Tax{}
 	err := c.Bind(&newTax)
+	var lev int
+
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Err{Message: err.Error()})
 	}
@@ -124,7 +166,9 @@ func CalTaxWithTaxLev(c echo.Context) error {
 
 	totalIncome = totalIncome - personalDeduction
 	totalIncome = totalIncome - ValidateAllowances(newTax.Allowances)
-	totalIncome = TaxLevel(totalIncome)
+	lev, totalIncome = TaxLevel(totalIncome)
 	val := CalTaxWithWht(totalIncome, newTax.Wht)
-	return c.JSON(http.StatusOK, TotalTax{Tax: val})
+	setTaxLevel(lev, val)
+	total := getTaxLevel(val)
+	return c.JSON(http.StatusOK, total)
 }
