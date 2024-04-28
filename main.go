@@ -1,15 +1,21 @@
 package main
 
 import (
-	"net/http"
+	"log"
 
+	"github.com/chollamatsu/assessment-tax/calTax"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func main() {
+	// start server
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
-	})
-	e.Logger.Fatal(e.Start(":8080"))
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	e.POST("/tax/calculations", calTax.CalTaxWithTaxLev)
+
+	log.Fatal(e.Start(":8080"))
 }

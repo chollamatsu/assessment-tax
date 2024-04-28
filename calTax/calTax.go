@@ -1,11 +1,10 @@
-package caltax
+package calTax
 
 import (
-	"fmt"
 	"math"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo"
 )
 
 type Err struct {
@@ -53,7 +52,7 @@ func Contains(arr []string, target string) bool {
 	return false
 }
 
-func ValidateAllowances(allowanceList Allowance) float64 { // ต้อง rewrite ใหม่ เพราะว่า allownance ใส่ได้หลายอัน
+func ValidateAllowances(allowanceList Allowance) float64 {
 	typeList := []string{"donation", "k-receipt", "tax-free-shop"}
 	total := float64(0)
 	for _, val := range allowanceList {
@@ -74,7 +73,7 @@ func ValidateAllowances(allowanceList Allowance) float64 { // ต้อง rewri
 				total += val.Amount
 			}
 		}
-		if val.AllowanceType == "k-receipt" { //ถ้า set k-re >เชคว่า amount เกิน k-re ไหม ถ้าไม่ก็
+		if val.AllowanceType == "k-receipt" {
 			if val.Amount >= kReceipt {
 				total += kReceipt
 			}
@@ -120,12 +119,8 @@ func CalTaxWithTaxLev(c echo.Context) error {
 	totalIncome := newTax.TotalIncome
 
 	totalIncome = totalIncome - personalDeduction
-	fmt.Println("with discount:", totalIncome)
 	totalIncome = CalTaxWithWht(totalIncome, newTax.Wht)
-	fmt.Println("with wht:", totalIncome)
 	totalIncome = totalIncome - ValidateAllowances(newTax.Allowances)
-	fmt.Println("with allow:", totalIncome)
 	val := TaxLevel(totalIncome)
-	fmt.Println("total tax:", val)
 	return c.JSON(http.StatusOK, TotalTax{Tax: val})
 }
