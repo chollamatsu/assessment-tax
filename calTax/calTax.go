@@ -7,68 +7,6 @@ import (
 	"github.com/labstack/echo"
 )
 
-type Err struct {
-	Message string `json:"message"`
-}
-
-type TotalTax struct {
-	Tax      float64     `json : 'tax`
-	TaxLevel []taxDetail `json: "taxLevel`
-}
-
-type Tax struct {
-	TotalIncome float64   `json:"totalIncome"`
-	Wht         float64   `json:"wht"`
-	Allowances  Allowance `json:"allowances"`
-}
-
-type Allowance []struct {
-	AllowanceType string  `json:allowanceType`
-	Amount        float64 `json:amount`
-}
-
-type taxDetail struct {
-	Level string  `json:"level"`
-	Tax   float64 `json:"tax"`
-}
-
-var personalDeduction = float64(6 * math.Pow10(4))
-var kReceipt = float64(5 * math.Pow10(4))
-
-var taxDetails = []taxDetail{
-	{
-		Level: "0-150,000",
-		Tax:   0.0,
-	},
-	{
-		Level: "150,001-500,000",
-		Tax:   0.0,
-	},
-	{
-		Level: "500,001-1,000,000",
-		Tax:   0.0,
-	},
-	{
-		Level: "1,000,001-2,000,000",
-		Tax:   0.0,
-	},
-	{
-		Level: "2,000,001 ขึ้นไป",
-		Tax:   0.0,
-	},
-}
-
-func setTaxLevel(idx int, TaxVal float64) {
-	taxDetails[idx].Tax = TaxVal
-}
-
-func getTaxLevel(TaxVal float64) TotalTax {
-	total := TotalTax{
-		Tax:      TaxVal,
-		TaxLevel: taxDetails,
-	}
-	return total
-}
 func TaxLevel(income float64) (int, float64) {
 	if income >= 0 && income < float64(15*math.Pow10(4)) {
 		return 0, 0
@@ -154,21 +92,21 @@ func CalTaxWithTaxLev(c echo.Context) error {
 	var lev int
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, Err{Message: badRequest + err.Error()})
 	}
 
 	isValid := ValidateTaxProps(newTax)
 
 	if !isValid {
-		return c.JSON(http.StatusBadRequest, Err{Message: "Allownance propperties does not valid"})
+		return c.JSON(http.StatusBadRequest, Err{Message: invalidProperty})
 	}
 	totalIncome := newTax.TotalIncome
 
-	totalIncome = totalIncome - personalDeduction
+	totalIncome = totalIncome - GetPersonalDeduction()
 	totalIncome = totalIncome - ValidateAllowances(newTax.Allowances)
 	lev, totalIncome = TaxLevel(totalIncome)
 	val := CalTaxWithWht(totalIncome, newTax.Wht)
-	setTaxLevel(lev, val)
-	total := getTaxLevel(val)
+	SetTaxLevel(lev, val)
+	total := GetTaxLevel(val)
 	return c.JSON(http.StatusOK, total)
 }
