@@ -13,6 +13,7 @@ var db *sql.DB
 func InitDB() {
 	var err error
 	db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
+
 	if err != nil {
 		log.Fatal("Connect to database error", err)
 	}

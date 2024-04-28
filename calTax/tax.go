@@ -10,6 +10,10 @@ type Personal struct {
 	Amount float64 `json :"amount"`
 }
 
+type Receipt struct {
+	Amount float64 `json :"amount"`
+}
+
 type TotalTax struct {
 	Tax      float64     `json : 'tax`
 	TaxLevel []taxDetail `json: "taxLevel`
