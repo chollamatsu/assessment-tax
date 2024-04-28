@@ -119,8 +119,8 @@ func CalTaxWithTaxLev(c echo.Context) error {
 	totalIncome := newTax.TotalIncome
 
 	totalIncome = totalIncome - personalDeduction
-	totalIncome = CalTaxWithWht(totalIncome, newTax.Wht)
 	totalIncome = totalIncome - ValidateAllowances(newTax.Allowances)
-	val := TaxLevel(totalIncome)
+	totalIncome = TaxLevel(totalIncome)
+	val := CalTaxWithWht(totalIncome, newTax.Wht)
 	return c.JSON(http.StatusOK, TotalTax{Tax: val})
 }
