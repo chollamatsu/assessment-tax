@@ -32,3 +32,22 @@ func SetPersonalDeduction(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, Personal{Amount: GetPersonalDeduction()})
 }
+
+func SetKreceipt(c echo.Context) error {
+	newKreceipt := Receipt{}
+	err := c.Bind(&newKreceipt)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Err{Message: err.Error()})
+	}
+	// connect db
+	stmt, err := db.Prepare(updateKreceipt)
+	if err != nil {
+		log.Fatal(faltalErrorPrepare, err)
+	}
+
+	if _, err := stmt.Exec(1, newKreceipt.Amount); err != nil {
+		log.Fatal(faltalErrorExecute, err)
+	}
+
+	return c.JSON(http.StatusOK, GetKreceipt())
+}

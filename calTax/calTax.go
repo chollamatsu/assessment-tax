@@ -54,8 +54,8 @@ func ValidateAllowances(allowanceList Allowance) float64 {
 			}
 		}
 		if val.AllowanceType == "k-receipt" {
-			if val.Amount >= kReceipt {
-				total += kReceipt
+			if val.Amount >= GetKreceipt() {
+				total += GetKreceipt()
 			} else {
 				total += val.Amount
 			}

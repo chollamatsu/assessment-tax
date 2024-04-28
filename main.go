@@ -27,6 +27,7 @@ func main() {
 	}))
 
 	g.POST("/deductions/personal", calTax.SetPersonalDeduction)
+	g.POST("/deductions/k-receipt", calTax.SetKreceipt)
 
 	log.Fatal(e.Start(":8080"))
 }
