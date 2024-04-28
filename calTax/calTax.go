@@ -55,20 +55,22 @@ func Contains(arr []string, target string) bool {
 func ValidateAllowances(allowanceList Allowance) float64 {
 	typeList := []string{"donation", "k-receipt", "tax-free-shop"}
 	total := float64(0)
+	donateMax := 1 * math.Pow10(5)
+	taxShopMax := 1 * math.Pow10(5)
 	for _, val := range allowanceList {
 		if !Contains(typeList, val.AllowanceType) || val.Amount < 0 {
 			return -1
 		}
 		if val.AllowanceType == "donation" {
-			if val.Amount >= 1*math.Pow10(5) {
-				total += 1 * math.Pow10(5)
+			if val.Amount >= donateMax {
+				total += donateMax
 			} else {
 				total += val.Amount
 			}
 		}
 		if val.AllowanceType == "tax-free-shop" {
-			if val.Amount >= 1*math.Pow10(5) {
-				total += 1 * math.Pow10(5)
+			if val.Amount >= taxShopMax {
+				total += taxShopMax
 			} else {
 				total += val.Amount
 			}
@@ -76,6 +78,8 @@ func ValidateAllowances(allowanceList Allowance) float64 {
 		if val.AllowanceType == "k-receipt" {
 			if val.Amount >= kReceipt {
 				total += kReceipt
+			} else {
+				total += val.Amount
 			}
 		}
 	}
